@@ -12,7 +12,7 @@ mqtt_port = int(os.environ['MQTT_PORT'])
 
 isOutputRetrieved = False
 
-command = "cat /proc/asound/card*/pcm*/sub*/status | grep 'RUNNING'"
+command = "cat ./sound/card*/pcm*/sub*/status | grep 'RUNNING'"
 
 
 def retrieve_input():
