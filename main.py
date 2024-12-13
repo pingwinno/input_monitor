@@ -1,8 +1,14 @@
-import json
+import logging
+import os
 import subprocess
 from time import sleep
 
-from websocket import create_connection
+import paho.mqtt.client as mqtt
+
+log = logging.getLogger()
+
+mqtt_url = os.environ['MQTT_URL']
+mqtt_port = int(os.environ['MQTT_PORT'])
 
 isOutputRetrieved = False
 
@@ -12,12 +18,7 @@ command = "cat /proc/asound/card*/pcm*/sub*/status | grep 'RUNNING'"
 def retrieve_input():
     print("enable spoty input")
     try:
-        ws = create_connection("ws://127.0.0.1:8000/ws")
-        json_data = json.loads(ws.recv())
-        if json_data['input'] != 0:
-            json_data['input'] = 0
-        ws.send(json.dumps(json_data))
-        ws.close()
+        send_message(0)
     except Exception as e:
         print(e)
 
@@ -25,13 +26,20 @@ def retrieve_input():
 def release_input():
     print("disable spoty input")
     try:
-        ws = create_connection("ws://127.0.0.1:8000/ws")
-        json_data = json.loads(ws.recv())
-        json_data['input'] = 1
-        ws.send(json.dumps(json_data))
-        ws.close()
+        send_message(1)
     except Exception as e:
         print(e)
+
+
+def send_message(input):
+    mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="input_monitor", protocol=mqtt.MQTTv5)
+
+    mqttc.connect(mqtt_url, mqtt_port)
+    mqttc.loop_start()
+    msg_info = mqttc.publish("/input", input, qos=0)
+    log.info(f"Message is sent: {msg_info}")
+    mqttc.disconnect()
+    mqttc.loop_stop()
 
 
 while True:
@@ -49,5 +57,3 @@ while True:
             release_input()
             isOutputRetrieved = False
     sleep(1)
-
-
