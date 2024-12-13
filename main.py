@@ -9,6 +9,8 @@ log = logging.getLogger()
 
 mqtt_url = os.environ['MQTT_URL']
 mqtt_port = int(os.environ['MQTT_PORT'])
+int_input = int(os.environ['INT_INPUT'])
+ext_input = int(os.environ['EXT_INPUT'])
 
 isOutputRetrieved = False
 
@@ -18,7 +20,7 @@ command = "cat ./sound/card*/pcm*/sub*/status | grep 'RUNNING'"
 def retrieve_input():
     print("enable spoty input")
     try:
-        send_message(0)
+        send_message(int_input)
     except Exception as e:
         print(e)
 
@@ -26,7 +28,7 @@ def retrieve_input():
 def release_input():
     print("disable spoty input")
     try:
-        send_message(1)
+        send_message(ext_input)
     except Exception as e:
         print(e)
 
